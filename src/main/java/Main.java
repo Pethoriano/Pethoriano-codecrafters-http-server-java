@@ -25,6 +25,7 @@ public class Main {
             } else if (path.startsWith("/echo/")) {
                 String echoString = path.substring(6);
                 String response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + echoString.length() + "\r\n\r\n" + echoString;
+                clientSocket.getOutputStream().write(response.getBytes());
             } else {
                 clientSocket.getOutputStream().write("HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
             }
