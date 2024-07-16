@@ -6,16 +6,43 @@ import java.net.Socket;
 
 public class Main {
     public static void main(String[] args) {
-        ServerSocket serverSocket = null;
-        Socket clientSocket = null;
-        BufferedReader bufferedReader = null;
+
 
         try {
 
-            serverSocket = new ServerSocket(4221);
+            ServerSocket serverSocket = new ServerSocket(4221);
             serverSocket.setReuseAddress(true);
-            clientSocket = serverSocket.accept();
-            bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+            while(true){
+
+                Socket clientSocket = serverSocket.accept();
+                ConnectionHandler connectionHandler = new ConnectionHandler(clientSocket);
+                connectionHandler.start();
+
+            }
+        } catch (IOException e) {
+
+            System.out.println("IOException: " + e.getMessage());
+
+        }
+    }
+}
+
+class ConnectionHandler extends Thread {
+
+    private Socket clientSocket;
+
+
+    public ConnectionHandler (Socket clientSocket){
+        this.clientSocket = clientSocket;
+    }
+
+    @Override
+    public void run (){
+
+        try{
+
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             String clientRequest = bufferedReader.readLine();
             String[] requestParts = clientRequest.split(" ");
             String path = requestParts[1];
@@ -58,10 +85,14 @@ public class Main {
                 clientSocket.getOutputStream().write("HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
             }
 
+            clientSocket.close();
 
-        } catch (IOException e) {
-            System.out.println("IOException: " + e.getMessage());
+        }catch(IOException e){
+
+            System.out.println("IO Exception: " + e.getMessage());
+
         }
 
     }
+
 }
